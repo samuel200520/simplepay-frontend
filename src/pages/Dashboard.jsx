@@ -14,11 +14,40 @@ export default function Dashboard() {
   const [sending, setSending] = useState(false);
   const [lastTxn, setLastTxn] = useState(null);
   const [error, setError] = useState('');
-
-  useEffect(() => {
+  const [linkedAccounts, setLinkedAccounts] = useState([]);
+  const [newAccount, setNewAccount] = useState({ provider_id: '', account_number: '' });
+  const [linkingAccount, setLinkingAccount] = useState(false);
+  const [linkError, setLinkError] = useState('');
+ useEffect(() => {
     client.get('/user/providers').then(r => setProviders(r.data.providers));
     client.get('/transfer/history').then(r => setTransactions(r.data.transactions));
+    client.get('/accounts').then(r => setLinkedAccounts(r.data.accounts));
   }, []);
+
+  const fetchAccounts = async () => {
+    const res = await client.get('/accounts');
+    setLinkedAccounts(res.data.accounts);
+  };
+
+  const handleLinkAccount = async () => {
+    if (!newAccount.provider_id || !newAccount.account_number) return;
+    setLinkingAccount(true);
+    setLinkError('');
+    try {
+      await client.post('/accounts', newAccount);
+      await fetchAccounts();
+      setNewAccount({ provider_id: '', account_number: '' });
+    } catch (err) {
+      setLinkError(err.response?.data?.error || 'Could not link account');
+    } finally {
+      setLinkingAccount(false);
+    }
+  };
+
+  const handleUnlinkAccount = async (id) => {
+    await client.delete(`/accounts/${id}`);
+    await fetchAccounts();
+  };
 
   const fee = form.amount ? Math.round(parseFloat(form.amount) * 0.005) : 0;
   const total = form.amount ? parseFloat(form.amount) + fee : 0;
@@ -90,7 +119,7 @@ export default function Dashboard() {
 
         {/* Tabs */}
         <div style={s.tabs}>
-          {['send', 'history', 'network'].map(t => (
+          {['send', 'accounts', 'history', 'network'].map(t => (
             <div key={t} style={{ ...s.tab, ...(tab === t ? s.tabActive : {}) }} onClick={() => setTab(t)}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </div>
@@ -221,7 +250,58 @@ export default function Dashboard() {
               )}
             </div>
           )}
+{tab === 'accounts' && (
+            <div>
+              <div style={s.sectionTitle}>Link a new account</div>
+              {linkError && <div style={s.errorBox}>{linkError}</div>}
+              <label style={s.label}>Provider</label>
+              <select
+                style={s.input}
+                value={newAccount.provider_id}
+                onChange={e => setNewAccount({ ...newAccount, provider_id: e.target.value })}
+              >
+                <option value="">Select a provider</option>
+                {providers.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <label style={s.label}>Account / phone number</label>
+              <input
+                style={s.input}
+                placeholder="e.g. 077 123 456"
+                value={newAccount.account_number}
+                onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })}
+              />
+              <button
+                style={{ ...s.btn, opacity: newAccount.provider_id && newAccount.account_number ? 1 : 0.5 }}
+                disabled={!newAccount.provider_id || !newAccount.account_number || linkingAccount}
+                onClick={handleLinkAccount}
+              >
+                {linkingAccount ? 'Linking...' : 'Link account'}
+              </button>
 
+              <div style={{ ...s.sectionTitle, marginTop: '24px' }}>Your linked accounts</div>
+              {linkedAccounts.length === 0 && <p style={{ color: '#888', fontSize: '14px' }}>No accounts linked yet.</p>}
+              {linkedAccounts.map(acc => {
+                const p = providers.find(pr => pr.id === acc.provider_id);
+                return (
+                  <div key={acc.id} style={s.txnItem}>
+                    <div style={{ ...s.txnIcon, background: p?.color || '#1a6b3c' }}>{p?.short || '??'}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 500 }}>{p?.name || acc.provider_id}</div>
+                      <div style={{ fontSize: '12px', color: '#888' }}>{acc.account_number} · ✓ Verified</div>
+                    </div>
+                    <button
+                      onClick={() => handleUnlinkAccount(acc.id)}
+                      style={{ background: 'none', border: 'none', color: '#a32d2d', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {/* HISTORY TAB */}
           {tab === 'history' && (
             <div>
