@@ -18,7 +18,8 @@ export default function Dashboard() {
   const [newAccount, setNewAccount] = useState({ provider_id: '', account_number: '' });
   const [linkingAccount, setLinkingAccount] = useState(false);
   const [linkError, setLinkError] = useState('');
- useEffect(() => {
+
+  useEffect(() => {
     client.get('/user/providers').then(r => setProviders(r.data.providers));
     client.get('/transfer/history').then(r => setTransactions(r.data.transactions));
     client.get('/accounts').then(r => setLinkedAccounts(r.data.accounts));
@@ -88,7 +89,6 @@ export default function Dashboard() {
     <div style={s.page}>
       <div style={s.app}>
 
-        {/* Header */}
         <div style={s.header}>
           <div>
             <div style={s.logo}>Simple<span style={{ color: '#7edeab' }}>Pay</span></div>
@@ -103,12 +103,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Balance */}
         <div style={s.balanceBar}>
           <div>
             <div style={{ fontSize: '12px', opacity: 0.7 }}>SimplePay Wallet</div>
             <div style={{ fontSize: '22px', fontWeight: 500 }}>
-              Le {wallet ? Number(wallet.balance).toLocaleString() : '—'}
+              NLe {wallet ? Number(wallet.balance).toLocaleString() : '—'}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -117,7 +116,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div style={s.tabs}>
           {['send', 'accounts', 'history', 'network'].map(t => (
             <div key={t} style={{ ...s.tab, ...(tab === t ? s.tabActive : {}) }} onClick={() => setTab(t)}>
@@ -126,10 +124,8 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Content */}
         <div style={s.content}>
 
-          {/* SEND TAB */}
           {tab === 'send' && (
             <div>
               <div style={s.networkBadge}>● Network live — {providers.length} providers connected</div>
@@ -141,7 +137,6 @@ export default function Dashboard() {
 
               {error && <div style={s.errorBox}>{error}</div>}
 
-              {/* Step 1 */}
               {step === 1 && (
                 <>
                   <div style={s.sectionTitle}>From</div>
@@ -171,7 +166,6 @@ export default function Dashboard() {
                 </>
               )}
 
-              {/* Step 2 */}
               {step === 2 && (
                 <>
                   <div style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>
@@ -179,13 +173,13 @@ export default function Dashboard() {
                   </div>
                   <label style={s.label}>Recipient phone / account</label>
                   <input style={s.input} placeholder="077 123 456" value={form.recipient} onChange={e => setForm({ ...form, recipient: e.target.value })} />
-                  <label style={s.label}>Amount (SLL)</label>
+                  <label style={s.label}>Amount (NLe)</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <span style={s.currencyBadge}>Le</span>
-                    <input style={{ ...s.input, flex: 1 }} type="number" placeholder="50000" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
+                    <span style={s.currencyBadge}>NLe</span>
+                    <input style={{ ...s.input, flex: 1 }} type="number" placeholder="50" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
                   </div>
                   <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                    Fee: 0.5% = Le {fee.toLocaleString()} · Total: Le {total.toLocaleString()}
+                    Fee: 0.5% = NLe {fee.toLocaleString()} · Total: NLe {total.toLocaleString()}
                   </div>
                   <label style={s.label}>Note (optional)</label>
                   <input style={s.input} placeholder="e.g. School fees" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} />
@@ -196,7 +190,6 @@ export default function Dashboard() {
                 </>
               )}
 
-              {/* Step 3 */}
               {step === 3 && (
                 <>
                   <div style={s.sectionTitle}>Confirm transfer</div>
@@ -205,9 +198,9 @@ export default function Dashboard() {
                       ['From', selectedFrom?.name],
                       ['To', selectedTo?.name],
                       ['Recipient', form.recipient],
-                      ['Amount', `Le ${Number(form.amount).toLocaleString()}`],
-                      ['Fee (0.5%)', `Le ${fee.toLocaleString()}`],
-                      ['Total deducted', `Le ${total.toLocaleString()}`],
+                      ['Amount', `NLe ${Number(form.amount).toLocaleString()}`],
+                      ['Fee (0.5%)', `NLe ${fee.toLocaleString()}`],
+                      ['Total deducted', `NLe ${total.toLocaleString()}`],
                       ...(form.note ? [['Note', form.note]] : []),
                     ].map(([k, v]) => (
                       <div key={k} style={s.receiptRow}>
@@ -223,20 +216,19 @@ export default function Dashboard() {
                 </>
               )}
 
-              {/* Step 4 - Success */}
               {step === 4 && lastTxn && (
                 <div style={{ textAlign: 'center', padding: '24px 0' }}>
                   <div style={s.successIcon}>✓</div>
                   <div style={{ fontSize: '18px', fontWeight: 500, marginBottom: '8px' }}>Transfer successful!</div>
                   <div style={{ fontSize: '14px', color: '#888', marginBottom: '20px' }}>
-                    Le {Number(lastTxn.amount).toLocaleString()} sent from {selectedFrom?.name} to {selectedTo?.name}
+                    NLe {Number(lastTxn.amount).toLocaleString()} sent from {selectedFrom?.name} to {selectedTo?.name}
                   </div>
                   <div style={s.receiptCard}>
                     {[
                       ['Reference', lastTxn.reference],
-                      ['Amount sent', `Le ${Number(lastTxn.amount).toLocaleString()}`],
-                      ['Total charged', `Le ${Number(lastTxn.total_deducted).toLocaleString()}`],
-                      ['New balance', `Le ${Number(lastTxn.new_balance).toLocaleString()}`],
+                      ['Amount sent', `NLe ${Number(lastTxn.amount).toLocaleString()}`],
+                      ['Total charged', `NLe ${Number(lastTxn.total_deducted).toLocaleString()}`],
+                      ['New balance', `NLe ${Number(lastTxn.new_balance).toLocaleString()}`],
                       ['Status', '✓ Completed'],
                     ].map(([k, v]) => (
                       <div key={k} style={s.receiptRow}>
@@ -250,7 +242,8 @@ export default function Dashboard() {
               )}
             </div>
           )}
-{tab === 'accounts' && (
+
+          {tab === 'accounts' && (
             <div>
               <div style={s.sectionTitle}>Link a new account</div>
               {linkError && <div style={s.errorBox}>{linkError}</div>}
@@ -302,7 +295,7 @@ export default function Dashboard() {
               })}
             </div>
           )}
-          {/* HISTORY TAB */}
+
           {tab === 'history' && (
             <div>
               <div style={s.sectionTitle}>Recent transactions</div>
@@ -321,14 +314,13 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div style={{ color: '#a32d2d', fontWeight: 500, fontSize: '14px' }}>
-                    -Le {Number(t.amount).toLocaleString()}
+                    -NLe {Number(t.amount).toLocaleString()}
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* NETWORK TAB */}
           {tab === 'network' && (
             <div>
               <div style={s.networkBadge}>● Live network</div>
