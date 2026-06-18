@@ -13,8 +13,9 @@ export default function Admin() {
   const [transactions, setTransactions] = useState([]);
   const [actionMsg, setActionMsg] = useState('');
 
-  useEffect(() => {
+ useEffect(() => {
     if (token) fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const fetchTransactions = async () => {
