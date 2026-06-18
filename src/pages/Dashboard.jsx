@@ -78,7 +78,15 @@ export default function Dashboard() {
     await fetchAccounts();
   };
 
-  const fee = form.amount ? Math.round(parseFloat(form.amount) * 0.005) : 0;
+  function calculateFee(amount) {
+    if (amount <= 50) return 1;
+    if (amount <= 200) return 3;
+    if (amount <= 500) return 7;
+    if (amount <= 1000) return 12;
+    return Math.round(amount * 0.01);
+  }
+
+  const fee = form.amount ? calculateFee(parseFloat(form.amount)) : 0;
   const total = form.amount ? parseFloat(form.amount) + fee : 0;
 
   const handleSend = async () => {
@@ -221,7 +229,7 @@ export default function Dashboard() {
                     <input style={{ ...s.input, flex: 1 }} type="number" placeholder="50" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
                   </div>
                   <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                    Fee: 0.5% = NLe {fee.toLocaleString()} · Total: NLe {total.toLocaleString()}
+                    Fee: NLe {fee.toLocaleString()} · Total: NLe {total.toLocaleString()}
                   </div>
                   <label style={s.label}>Note (optional)</label>
                   <input style={s.input} placeholder="e.g. School fees" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} />
@@ -241,7 +249,7 @@ export default function Dashboard() {
                       ['To', selectedTo?.name],
                       ['Recipient', form.recipient],
                       ['Amount', `NLe ${Number(form.amount).toLocaleString()}`],
-                      ['Fee (0.5%)', `NLe ${fee.toLocaleString()}`],
+                      ['Fee', `NLe ${fee.toLocaleString()}`],
                       ['Total deducted', `NLe ${total.toLocaleString()}`],
                       ...(form.note ? [['Note', form.note]] : []),
                     ].map(([k, v]) => (
