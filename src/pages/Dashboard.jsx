@@ -18,10 +18,9 @@ export default function Dashboard() {
   const [newAccount, setNewAccount] = useState({ provider_id: '', account_number: '' });
   const [linkingAccount, setLinkingAccount] = useState(false);
   const [linkError, setLinkError] = useState('');
-  const [linkError, setLinkError] = useState('');
   const [notification, setNotification] = useState(null);
 
- useEffect(() => {
+  useEffect(() => {
     client.get('/user/providers').then(r => setProviders(r.data.providers));
     client.get('/accounts').then(r => setLinkedAccounts(r.data.accounts));
     client.get('/transfer/history').then(r => {
@@ -29,6 +28,7 @@ export default function Dashboard() {
       setTransactions(txns);
       checkForNewActivity(txns);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkForNewActivity = (txns) => {
@@ -444,7 +444,7 @@ const s = {
   statGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' },
   statCard: { background: '#f8f8f8', borderRadius: '8px', padding: '12px' },
   successIcon: { width: '60px', height: '60px', borderRadius: '50%', background: '#e6f7ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', color: '#1a6b3c' },
- errorBox: { background: '#fde8e8', color: '#a32d2d', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px' },
+  errorBox: { background: '#fde8e8', color: '#a32d2d', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px' },
   notificationBanner: { display: 'flex', alignItems: 'center', padding: '12px 16px', borderRadius: '12px', border: '1px solid', marginBottom: '12px' },
   notificationClose: { background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '14px', padding: '0 4px' },
 };
