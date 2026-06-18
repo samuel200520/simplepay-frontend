@@ -18,12 +18,40 @@ export default function Dashboard() {
   const [newAccount, setNewAccount] = useState({ provider_id: '', account_number: '' });
   const [linkingAccount, setLinkingAccount] = useState(false);
   const [linkError, setLinkError] = useState('');
+  const [linkError, setLinkError] = useState('');
+  const [notification, setNotification] = useState(null);
 
-  useEffect(() => {
+ useEffect(() => {
     client.get('/user/providers').then(r => setProviders(r.data.providers));
-    client.get('/transfer/history').then(r => setTransactions(r.data.transactions));
     client.get('/accounts').then(r => setLinkedAccounts(r.data.accounts));
+    client.get('/transfer/history').then(r => {
+      const txns = r.data.transactions;
+      setTransactions(txns);
+      checkForNewActivity(txns);
+    });
   }, []);
+
+  const checkForNewActivity = (txns) => {
+    const lastSeen = localStorage.getItem('simplepay_last_seen_txn');
+    if (!txns.length) return;
+
+    const mostRecent = txns[0];
+    if (lastSeen === mostRecent.reference) return;
+
+    if (mostRecent.direction === 'received') {
+      setNotification({
+        type: 'received',
+        text: `You received NLe ${Number(mostRecent.amount).toLocaleString()} from ${mostRecent.receiver_identifier}`,
+      });
+    } else if (mostRecent.status === 'reversed') {
+      setNotification({
+        type: 'reversed',
+        text: `Your transfer of NLe ${Number(mostRecent.amount).toLocaleString()} was reversed and refunded`,
+      });
+    }
+
+    localStorage.setItem('simplepay_last_seen_txn', mostRecent.reference);
+  };
 
   const fetchAccounts = async () => {
     const res = await client.get('/accounts');
@@ -88,6 +116,20 @@ export default function Dashboard() {
   return (
     <div style={s.page}>
       <div style={s.app}>
+
+        {notification && (
+          <div style={{
+            ...s.notificationBanner,
+            background: notification.type === 'received' ? '#e6f7ed' : '#fff4e5',
+            borderColor: notification.type === 'received' ? '#a8dfc0' : '#ffd699',
+          }}>
+            <span style={{ fontSize: '16px', marginRight: '8px' }}>
+              {notification.type === 'received' ? '💰' : '↩️'}
+            </span>
+            <span style={{ flex: 1, fontSize: '13px', color: '#333' }}>{notification.text}</span>
+            <button onClick={() => setNotification(null)} style={s.notificationClose}>✕</button>
+          </div>
+        )}
 
         <div style={s.header}>
           <div>
@@ -402,5 +444,7 @@ const s = {
   statGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' },
   statCard: { background: '#f8f8f8', borderRadius: '8px', padding: '12px' },
   successIcon: { width: '60px', height: '60px', borderRadius: '50%', background: '#e6f7ed', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px', color: '#1a6b3c' },
-  errorBox: { background: '#fde8e8', color: '#a32d2d', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px' },
+ errorBox: { background: '#fde8e8', color: '#a32d2d', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '12px' },
+  notificationBanner: { display: 'flex', alignItems: 'center', padding: '12px 16px', borderRadius: '12px', border: '1px solid', marginBottom: '12px' },
+  notificationClose: { background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: '14px', padding: '0 4px' },
 };
