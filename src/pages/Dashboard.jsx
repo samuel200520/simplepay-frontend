@@ -296,7 +296,7 @@ export default function Dashboard() {
             </div>
           )}
 
-         {tab === 'history' && (
+          {tab === 'history' && (
             <div>
               <div style={s.sectionTitle}>Recent transactions</div>
               {transactions.length === 0 && (
@@ -304,20 +304,27 @@ export default function Dashboard() {
               )}
               {transactions.map(t => {
                 const isReceived = t.direction === 'received';
+                const isReversed = t.status === 'reversed';
                 return (
-                  <div key={t.id} style={s.txnItem}>
-                    <div style={{ ...s.txnIcon, background: isReceived ? '#1a6b3c' : '#888' }}>
-                      {isReceived ? '↓' : t.to_provider.slice(0, 2).toUpperCase()}
+                  <div key={t.id} style={{ ...s.txnItem, opacity: isReversed ? 0.6 : 1 }}>
+                    <div style={{ ...s.txnIcon, background: isReversed ? '#888' : isReceived ? '#1a6b3c' : '#888' }}>
+                      {isReversed ? '↩' : isReceived ? '↓' : t.to_provider.slice(0, 2).toUpperCase()}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '14px', fontWeight: 500 }}>
                         {isReceived ? `From ${t.receiver_identifier}` : t.receiver_identifier}
+                        {isReversed && <span style={{ color: '#a32d2d', fontSize: '11px', marginLeft: '8px' }}>· Reversed</span>}
                       </div>
                       <div style={{ fontSize: '12px', color: '#888' }}>
                         {isReceived ? `Received via ${t.to_provider}` : `${t.from_provider} → ${t.to_provider}`} · {new Date(t.created_at).toLocaleDateString()}
                       </div>
                     </div>
-                    <div style={{ color: isReceived ? '#1a6b3c' : '#a32d2d', fontWeight: 500, fontSize: '14px' }}>
+                    <div style={{
+                      color: isReversed ? '#888' : isReceived ? '#1a6b3c' : '#a32d2d',
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      textDecoration: isReversed ? 'line-through' : 'none',
+                    }}>
                       {isReceived ? '+' : '-'}NLe {Number(t.amount).toLocaleString()}
                     </div>
                   </div>
