@@ -296,28 +296,33 @@ export default function Dashboard() {
             </div>
           )}
 
-          {tab === 'history' && (
+         {tab === 'history' && (
             <div>
               <div style={s.sectionTitle}>Recent transactions</div>
               {transactions.length === 0 && (
                 <p style={{ color: '#888', fontSize: '14px' }}>No transactions yet.</p>
               )}
-              {transactions.map(t => (
-                <div key={t.id} style={s.txnItem}>
-                  <div style={{ ...s.txnIcon, background: '#1a6b3c' }}>
-                    {t.to_provider.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 500 }}>{t.receiver_identifier}</div>
-                    <div style={{ fontSize: '12px', color: '#888' }}>
-                      {t.from_provider} → {t.to_provider} · {new Date(t.created_at).toLocaleDateString()}
+              {transactions.map(t => {
+                const isReceived = t.direction === 'received';
+                return (
+                  <div key={t.id} style={s.txnItem}>
+                    <div style={{ ...s.txnIcon, background: isReceived ? '#1a6b3c' : '#888' }}>
+                      {isReceived ? '↓' : t.to_provider.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                        {isReceived ? `From ${t.receiver_identifier}` : t.receiver_identifier}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#888' }}>
+                        {isReceived ? `Received via ${t.to_provider}` : `${t.from_provider} → ${t.to_provider}`} · {new Date(t.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div style={{ color: isReceived ? '#1a6b3c' : '#a32d2d', fontWeight: 500, fontSize: '14px' }}>
+                      {isReceived ? '+' : '-'}NLe {Number(t.amount).toLocaleString()}
                     </div>
                   </div>
-                  <div style={{ color: '#a32d2d', fontWeight: 500, fontSize: '14px' }}>
-                    -NLe {Number(t.amount).toLocaleString()}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
